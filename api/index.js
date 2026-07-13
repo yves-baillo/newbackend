@@ -1,58 +1,61 @@
-const express = require('express')
-const cors = require('cors')
+const express = require('express');
+const cors = require('cors');
 
-const app = express()
+const app = express();
 
-app.use(cors())
-app.use(express.json())
+// Middleware
+app.use(cors({ origin: '*', credentials: true }));
+app.use(express.json());
+
+// Debug middleware – logs every request
+app.use((req, res, next) => {
+  console.log(`📩 ${req.method} ${req.url}`);
+  console.log('📩 Body:', req.body);
+  next();
+});
 
 // ============================================
 // ROOT ENDPOINT
 // ============================================
 app.get('/', (req, res) => {
-  res.json({ success: true, message: 'API is running' })
-})
+  res.json({ success: true, message: 'API is running' });
+});
 
 // ============================================
 // TEST ENDPOINT
 // ============================================
 app.get('/api/test', (req, res) => {
-  res.json({ success: true, message: 'Test endpoint works!' })
-})
+  res.json({ success: true, message: 'Test endpoint works!' });
+});
 
 // ============================================
-// ADMIN LOGIN - FIXED!
+// ADMIN LOGIN – UPDATED with username
 // ============================================
 app.post('/api/admin/login', (req, res) => {
-  const { email, password } = req.body
-  
-  // For demo purposes - replace with real authentication
-  const adminEmail = 'admin@goabroad.com'
-  const adminPassword = 'admin123'
-  
-  if (email === adminEmail && password === adminPassword) {
+  const { username, password } = req.body;  // Now expects 'username'
+
+  // Hardcoded credentials
+  const adminUsername = 'hakizimana';
+  const adminPassword = 'alexis';
+
+  if (username === adminUsername && password === adminPassword) {
     res.json({
       success: true,
       message: 'Login successful',
       token: 'demo-jwt-token-12345',
-      user: {
-        email: adminEmail,
-        name: 'Admin'
-      }
-    })
+      user: { username: adminUsername, name: 'Admin' }
+    });
   } else {
     res.status(401).json({
       success: false,
-      message: 'Invalid email or password'
-    })
+      message: 'Invalid username or password'
+    });
   }
-})
+});
 
 // ============================================
 // SCHOLARSHIPS ENDPOINTS
 // ============================================
-
-// Get all scholarships
 app.get('/api/scholarships', (req, res) => {
   res.json([
     {
@@ -96,44 +99,12 @@ app.get('/api/scholarships', (req, res) => {
       status: 'active',
       featured: false,
       created_at: new Date().toISOString()
-    },
-    {
-      id: 4,
-      title: 'Erasmus Mundus Scholarship',
-      country: 'Europe',
-      degree: "Master's",
-      description: 'Erasmus Mundus offers fully funded scholarships for international students to study in multiple European countries.',
-      eligibility: 'Bachelor\'s degree. Open to all nationalities.',
-      benefits: 'Full tuition, monthly stipend, travel costs, insurance.',
-      deadline: '2025-12-01',
-      image_url: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=500',
-      status: 'active',
-      featured: false,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 5,
-      title: 'Australia Awards Scholarship',
-      country: 'Australia',
-      degree: "Master's & PhD",
-      description: 'Australia Awards provides fully funded scholarships for students from developing countries.',
-      eligibility: 'Citizens of eligible countries. Bachelor\'s degree required.',
-      benefits: 'Full tuition, living allowance, health insurance, travel.',
-      deadline: '2025-08-30',
-      image_url: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=500',
-      status: 'active',
-      featured: false,
-      created_at: new Date().toISOString()
     }
-  ])
-})
+  ]);
+});
 
-// Get single scholarship by ID
 app.get('/api/scholarships/:id', (req, res) => {
-  const scholarshipId = parseInt(req.params.id)
-  
-  // Return scholarship details based on ID
-  // For now, returning a sample response
+  const scholarshipId = parseInt(req.params.id);
   res.json({
     id: scholarshipId,
     title: 'Scholarship Details',
@@ -147,163 +118,71 @@ app.get('/api/scholarships/:id', (req, res) => {
     status: 'active',
     featured: true,
     created_at: new Date().toISOString()
-  })
-})
+  });
+});
 
 // ============================================
 // NOTIFICATIONS ENDPOINTS
 // ============================================
-
-// Get all notifications
 app.get('/api/notifications', (req, res) => {
   res.json([
-    { 
-      id: 1, 
-      type: 'scholarship', 
-      title: '🎓 New Scholarship: Fulbright 2025', 
-      message: 'Apply now for fully funded USA scholarship', 
-      created_at: new Date().toISOString(), 
-      read: false, 
-      scholarship_id: 1 
-    },
-    { 
-      id: 2, 
-      type: 'deadline', 
-      title: '⏰ Deadline Approaching', 
-      message: 'Chevening Scholarship deadline in 7 days', 
-      created_at: new Date().toISOString(), 
-      read: false, 
-      scholarship_id: 2 
-    },
-    { 
-      id: 3, 
-      type: 'news', 
-      title: '📢 Application Tips', 
-      message: 'How to write a winning Statement of Purpose', 
-      created_at: new Date().toISOString(), 
-      read: false 
-    },
-    { 
-      id: 4, 
-      type: 'scholarship', 
-      title: '🎓 DAAD Scholarship 2025', 
-      message: 'Study in Germany with full funding', 
-      created_at: new Date().toISOString(), 
-      read: false, 
-      scholarship_id: 3 
-    },
-    { 
-      id: 5, 
-      type: 'news', 
-      title: '📢 Visa Update', 
-      message: 'New visa policies for international students', 
-      created_at: new Date().toISOString(), 
-      read: false 
-    }
-  ])
-})
+    { id: 1, type: 'scholarship', title: '🎓 New Scholarship: Fulbright 2025', message: 'Apply now for fully funded USA scholarship', created_at: new Date().toISOString(), read: false, scholarship_id: 1 },
+    { id: 2, type: 'deadline', title: '⏰ Deadline Approaching', message: 'Chevening Scholarship deadline in 7 days', created_at: new Date().toISOString(), read: false, scholarship_id: 2 },
+    { id: 3, type: 'news', title: '📢 Application Tips', message: 'How to write a winning Statement of Purpose', created_at: new Date().toISOString(), read: false },
+    { id: 4, type: 'scholarship', title: '🎓 DAAD Scholarship 2025', message: 'Study in Germany with full funding', created_at: new Date().toISOString(), read: false, scholarship_id: 3 }
+  ]);
+});
 
-// Mark notification as read
 app.patch('/api/notifications/:id/read', (req, res) => {
-  const notificationId = parseInt(req.params.id)
-  res.json({ 
-    success: true, 
-    message: `Notification ${notificationId} marked as read` 
-  })
-})
+  res.json({ success: true, message: `Notification ${req.params.id} marked as read` });
+});
 
-// Mark all notifications as read
 app.patch('/api/notifications/read-all', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'All notifications marked as read' 
-  })
-})
+  res.json({ success: true, message: 'All notifications marked as read' });
+});
 
 // ============================================
-// CONTACT & SUBSCRIPTION ENDPOINTS
+// CONTACT & SUBSCRIPTION
 // ============================================
-
-// Contact form submission
 app.post('/api/contact', (req, res) => {
-  const { name, email, message } = req.body
-  
-  // Validate
+  const { name, email, message } = req.body;
   if (!name || !email || !message) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide name, email, and message'
-    })
+    return res.status(400).json({ success: false, message: 'All fields are required' });
   }
-  
-  res.json({ 
-    success: true, 
-    message: 'Message sent successfully!' 
-  })
-})
+  res.json({ success: true, message: 'Message sent successfully!' });
+});
 
-// Newsletter subscription
 app.post('/api/subscribe', (req, res) => {
-  const { email } = req.body
-  
-  if (!email) {
-    return res.status(400).json({
-      success: false,
-      message: 'Email is required'
-    })
-  }
-  
-  // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide a valid email address'
-    })
+    return res.status(400).json({ success: false, message: 'Invalid email format' });
   }
-  
-  res.json({ 
-    success: true, 
-    message: 'Subscribed successfully!' 
-  })
-})
+  res.json({ success: true, message: 'Subscribed successfully!' });
+});
 
-// Scholarship inquiry
 app.post('/api/scholarship/inquiry', (req, res) => {
-  const { name, email, scholarship_id, question } = req.body
-  
+  const { name, email, scholarship_id, question } = req.body;
   if (!name || !email || !question) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide name, email, and question'
-    })
+    return res.status(400).json({ success: false, message: 'Please provide name, email, and question' });
   }
-  
-  res.json({ 
-    success: true, 
-    message: 'Inquiry submitted successfully!' 
-  })
-})
+  res.json({ success: true, message: 'Inquiry submitted successfully!' });
+});
 
 // ============================================
-// 404 HANDLER - Must be at the end!
+// 404 HANDLER – Must be at the end
 // ============================================
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route ${req.method} ${req.originalUrl} not found`
-  })
-})
+  res.status(404).json({ success: false, message: `Route ${req.method} ${req.originalUrl} not found` });
+});
 
 // ============================================
 // ERROR HANDLER
 // ============================================
 app.use((err, req, res, next) => {
-  console.error('Error:', err)
-  res.status(500).json({
-    success: false,
-    message: 'Internal server error'
-  })
-})
+  console.error('Error:', err);
+  res.status(500).json({ success: false, message: 'Internal server error' });
+});
 
-module.exports = app
+module.exports = app;
